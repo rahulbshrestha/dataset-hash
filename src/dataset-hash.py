@@ -1,25 +1,22 @@
-import os, sys, hashlib
+import os, sys, hashlib, time, glob
 
-def md5hash(filename, directory):
+#Generate MD5 hash of file
+def md5hash(filename):
     hash = hashlib.md5()
-    filename = directory + filename
-
+    
     with open (filename, 'rb') as f:
         content = f.read()
         hash.update(content)
     return hash.hexdigest()
 
-# def md5sum(filename, blocksize):
-#     hash = hashlib.md5()
-#     with open(filename, "rb") as f:
-    #         for block in iter(lambda: f.read(blocksize), ""):
-    #             hash.update(block)
-#     return hash.hexdigest()
+# Calculate similarity % between two lists
+def similarity_score(list1, list2):
+    score = len(set(list1) & set(list2)) / float(len(set(list1) | set(list2))) * 100
+    return score
 
 def usage():
     print ("Usage: dataset-hash.py [OPTIONS] [FILES]")
     
-
 # Produce a Windows-style filename
 def winfname(filename):
     return filename.replace("/","\\")
@@ -33,29 +30,40 @@ def normfname(filename):
 
 
 if __name__ == '__main__':
-        
+    
+    start_time = time.time()
+
     if len(sys.argv) == 1:
         usage()
         sys.exit(0)
 
     args = sys.argv[1:]
 
-    hashlist = []
+    hashlist1 = []
     hashlist2 = []
-    main_dir = sys.argv[1]
-    main_dir2 = sys.argv[2]
+    dir1 = sys.argv[1]
+    dir2 = sys.argv[2]
     
-    for filename in os.listdir(main_dir):
-        hashlist.append((filename, md5hash(filename, main_dir)))
 
-    for filename2 in os.listdir(main_dir2):
-        hashlist2.append((filename2, md5hash(filename2, main_dir2)))
-        
-    #for hash in hashlist:
-    #    print ('%s  %s\n'%(hash[1], winfname(hash[0])))
+    for filename in glob.iglob(dir1 + '**/**', recursive=True):
+        if (os.path.isfile(filename)):
+            hashlist1.append((md5hash(filename)))
+    
+    for filename in glob.iglob(dir2 + '**/**', recursive=True):
+        if (os.path.isfile(filename)):
+            hashlist2.append((md5hash(filename)))
 
-    # Calculate similarity between two lists
-    similarity_score = len(set(hashlist) & set(hashlist2)) / float(len(set(hashlist) | set(hashlist2))) * 100  
-    print("Similarity %: ", similarity_score)
+    # print('Hashlist1: \n')
+    # for hash in hashlist:
+    #     print ('%s  %s\n'%(hash[1], hash[0]))
+    
+    # print('Hashlist2: \n')
+    # for hash in hashlist2:
+    #     print ('%s  %s\n'%(hash[1], hash[0]))
+
+    #Calculate similarity between two lists 
+    #print("Similarity %: ", similarity_score(hashlist1, hashlist2))
+
+    print("\nExecution time: %s seconds" % (time.time() - start_time))
         
 
