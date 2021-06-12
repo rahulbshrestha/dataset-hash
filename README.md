@@ -1,2 +1,2 @@
 # dataset-hash
-A Python implementation of hashing and comparing datasets
+A Python implementation of hashdeep for datasets
