@@ -1,7 +1,17 @@
-import os, sys, hashlib, time, glob
+import os, sys, hashlib, time
 
-#Generate MD5 hash of file
-def md5hash(filename):
+# Generate hash of all files in a directory recursively
+def hash_directory(dirname):
+    hashlist = []
+
+    for root, dirs, files in os.walk(dirname):
+        for file in files:
+            hashlist.append((hash_file(os.path.join(root, file))))
+
+    return hashlist
+
+# Generate MD5 hash of file
+def hash_file(filename):
     hash = hashlib.md5()
     
     with open (filename, 'rb') as f:
@@ -9,11 +19,18 @@ def md5hash(filename):
         hash.update(content)
     return hash.hexdigest()
 
+# Print contents of list
+def print_list(list):
+    for item in list:
+        print (item)
+    print('\n')
+
 # Calculate similarity % between two lists
-def similarity_score(list1, list2):
+def check_similarity(list1, list2):
     score = len(set(list1) & set(list2)) / float(len(set(list1) | set(list2))) * 100
     return score
 
+# Usage instructions
 def usage():
     print ("Usage: dataset-hash.py [OPTIONS] [FILES]")
     
@@ -41,28 +58,18 @@ if __name__ == '__main__':
 
     hashlist1 = []
     hashlist2 = []
+
     dir1 = sys.argv[1]
     dir2 = sys.argv[2]
-    
+ 
+    hashlist1 = hash_directory(dir1)
+    hashlist2 = hash_directory(dir2)
 
-    for filename in glob.iglob(dir1 + '**/**', recursive=True):
-        if (os.path.isfile(filename)):
-            hashlist1.append((md5hash(filename)))
-    
-    for filename in glob.iglob(dir2 + '**/**', recursive=True):
-        if (os.path.isfile(filename)):
-            hashlist2.append((md5hash(filename)))
-
-    # print('Hashlist1: \n')
-    # for hash in hashlist:
-    #     print ('%s  %s\n'%(hash[1], hash[0]))
-    
-    # print('Hashlist2: \n')
-    # for hash in hashlist2:
-    #     print ('%s  %s\n'%(hash[1], hash[0]))
+    print_list(hashlist1)
+    print_list(hashlist2)
 
     #Calculate similarity between two lists 
-    #print("Similarity %: ", similarity_score(hashlist1, hashlist2))
+    print("Similarity %: ", check_similarity(hashlist1, hashlist2))
 
     print("\nExecution time: %s seconds" % (time.time() - start_time))
         
