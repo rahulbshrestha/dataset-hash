@@ -31,7 +31,7 @@ def print_list(list):
 #     score = len(set(list1) & set(list2)) / float(len(set(list1) | set(list2))) * 100
 #     return score
 
-#Calculate similarity % between two lists
+# Calculate similarity % between two lists
 def check_similarity(list1, list2):
     c1 = Counter(list1)
     c2 = Counter (list2)
@@ -54,9 +54,9 @@ def check_similarity(list1, list2):
 
 # Usage instructions
 def usage():
-    print ("Usage: python3 dataset-hash.py [OPTIONS] [FILES]")
+    print ("Usage: python3 src/dataset-hash.py [OPTIONS] [FILES]")
     print ("-n        -  Display samples that don't match")
-    print ("-n        -  Displays samples that are matching")
+    print ("-m        -  Displays samples that are matching")
     
 # Produce a Windows-style filename
 def winfname(filename):
@@ -80,8 +80,8 @@ if __name__ == '__main__':
         usage()
         sys.exit(0)
 
+    # Resolve command line options
     args = sys.argv[1:]
-
     it = iter(args)
     for i in it:
         if i == '-n':
@@ -97,9 +97,11 @@ if __name__ == '__main__':
     dir1 = sys.argv[1]
     dir2 = sys.argv[2]
  
+    # Hash every file inside a directory and put it in a list 
     hashlist1 = hash_directory(dir1)
     hashlist2 = hash_directory(dir2)
 
+    # Print list of hashes
     print_list(hashlist1)
     print_list(hashlist2)
 
