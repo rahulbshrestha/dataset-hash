@@ -1,4 +1,4 @@
-# dataset-hash
+# hash-dataset
 Implementing a hashing technique to compare large scale, out of core machine learning datasets
 
 ### Instructions
