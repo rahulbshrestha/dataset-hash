@@ -1,16 +1,17 @@
 import os, sys, hashlib, time
+from collections import Counter
 
-# Generate hash of all files in a directory recursively
+# Generate hash for all files in a directory 
 def hash_directory(dirname):
     hashlist = []
 
-    for root, dirs, files in os.walk(dirname):
+    for root, dirs, files in os.walk(dirname, followlinks=False):
         for file in files:
-            hashlist.append((hash_file(os.path.join(root, file))))
+            hashlist.append((file, hash_file(os.path.join(root, file))))
 
     return hashlist
 
-# Generate MD5 hash of file
+# Generate MD5 hash for a file
 def hash_file(filename):
     hash = hashlib.md5()
     
@@ -19,20 +20,43 @@ def hash_file(filename):
         hash.update(content)
     return hash.hexdigest()
 
-# Print contents of list
+# Print contents of a list
 def print_list(list):
     for item in list:
         print (item)
     print('\n')
 
 # Calculate similarity % between two lists
+# def check_similarity(list1, list2):
+#     score = len(set(list1) & set(list2)) / float(len(set(list1) | set(list2))) * 100
+#     return score
+
+#Calculate similarity % between two lists
 def check_similarity(list1, list2):
-    score = len(set(list1) & set(list2)) / float(len(set(list1) | set(list2))) * 100
-    return score
+    c1 = Counter(list1)
+    c2 = Counter (list2)
+    diff = c1 - c2
+    common = c1 & c2
+    
+    c1_length = float(sum(c1.values()))
+    c2_length = float(sum(c2.values()))
+    diff_length = float(sum(diff.values()))
+    
+    if (opt_nomatch):
+        print('Non-matching samples: \n', list(diff))
+
+    if (opt_match):
+        print('Matching samples: \n', list(common))
+
+    similarity_score = 100 - ((diff_length / max(c1_length, c2_length))* 100) 
+    return similarity_score
+
 
 # Usage instructions
 def usage():
-    print ("Usage: dataset-hash.py [OPTIONS] [FILES]")
+    print ("Usage: python3 dataset-hash.py [OPTIONS] [FILES]")
+    print ("-n        -  Display samples that don't match")
+    print ("-n        -  Displays samples that are matching")
     
 # Produce a Windows-style filename
 def winfname(filename):
@@ -49,12 +73,23 @@ def normfname(filename):
 if __name__ == '__main__':
     
     start_time = time.time()
+    opt_nomatch = None
+    opt_match = None
 
     if len(sys.argv) == 1:
         usage()
         sys.exit(0)
 
     args = sys.argv[1:]
+
+    it = iter(args)
+    for i in it:
+        if i == '-n':
+            opt_nomatch = True
+            continue
+        elif i == '-m':
+            opt_match = True
+            continue
 
     hashlist1 = []
     hashlist2 = []
@@ -69,7 +104,7 @@ if __name__ == '__main__':
     print_list(hashlist2)
 
     #Calculate similarity between two lists 
-    print("Similarity %: ", check_similarity(hashlist1, hashlist2))
+    print("\nSimilarity %: ", check_similarity(hashlist1, hashlist2))
 
     print("\nExecution time: %s seconds" % (time.time() - start_time))
         
