@@ -14,6 +14,6 @@ Available options:
 ```
 python3 src/dataset-hash.py [OPTIONS] [FILES]
 
--m : Dispaly samples that are matching
--n : Display samples that don't match
+-m : Display samples that are matching
+-n : Display samples that are not matching
 ```
