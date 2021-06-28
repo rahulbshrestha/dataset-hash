@@ -1,4 +1,5 @@
 import os, sys, hashlib, time
+import mmh3
 from collections import Counter
 
 # Generate hash for all files in a directory 
@@ -14,11 +15,17 @@ def hash_directory(dirname):
 # Generate MD5 hash for a file
 def hash_file(filename):
     hash = hashlib.md5()
-    
+    # TODO: consider when file is too large and can't be fit in memory
     with open (filename, 'rb') as f:
         content = f.read()
         hash.update(content)
     return hash.hexdigest()
+
+def murmurhash_file(filename):
+    with open(filename, 'rb') as file:
+        data = file.read()
+    hash = mmh3.hash_bytes(data, 0xBEFFE)
+    return hash.hex()
 
 # Print contents of a list
 def print_list(list):
@@ -26,10 +33,11 @@ def print_list(list):
         print (item)
     print('\n')
 
-# Calculate similarity % between two lists
-# def check_similarity(list1, list2):
-#     score = len(set(list1) & set(list2)) / float(len(set(list1) | set(list2))) * 100
-#     return score
+def sum_hashes(list):
+    sum = 0
+    for item in list:
+        sum = sum + int(float(item[1]))
+    return sum
 
 # Calculate similarity % between two lists
 def check_similarity(list1, list2):
@@ -55,8 +63,9 @@ def check_similarity(list1, list2):
 # Usage instructions
 def usage():
     print ("Usage: python3 src/dataset-hash.py [OPTIONS] [FILES]")
-    print ("-n        -  Display samples that don't match")
-    print ("-m        -  Displays samples that are matching")
+    print ("-n        -  Display samples that don't match.")
+    print ("-m        -  Displays samples that are matching.")
+    print ("-p        -  Print hash lists of both datasets.  ")
     
 # Produce a Windows-style filename
 def winfname(filename):
@@ -75,6 +84,7 @@ if __name__ == '__main__':
     start_time = time.time()
     opt_nomatch = None
     opt_match = None
+    opt_print = None
 
     if len(sys.argv) == 1:
         usage()
@@ -90,24 +100,30 @@ if __name__ == '__main__':
         elif i == '-m':
             opt_match = True
             continue
+        elif i == '-p':
+            opt_print = True
 
     hashlist1 = []
     hashlist2 = []
 
     dir1 = sys.argv[1]
     dir2 = sys.argv[2]
- 
+    
     # Hash every file inside a directory and put it in a list 
     hashlist1 = hash_directory(dir1)
     hashlist2 = hash_directory(dir2)
 
     # Print list of hashes
-    print_list(hashlist1)
-    print_list(hashlist2)
+    if (opt_print):
+        print_list(hashlist1)
+        print_list(hashlist2)
 
+    
     #Calculate similarity between two lists 
-    print("\nSimilarity %: ", check_similarity(hashlist1, hashlist2))
+    #print("Similarity %: ", check_similarity(hashlist1, hashlist2))
 
-    print("\nExecution time: %s seconds" % (time.time() - start_time))
+    print("Execution time: %s seconds" % (time.time() - start_time))
         
+
+    #print ("Hash sum: ", sum_hashes(hashlist1))
 
