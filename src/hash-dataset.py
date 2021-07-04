@@ -1,5 +1,6 @@
 import os, sys, hashlib, time
 import mmh3
+from hashlist import Hashlist
 from collections import Counter
 
 # Generate hash for all files in a directory 
@@ -8,12 +9,12 @@ def hash_directory(dirname):
 
     for root, dirs, files in os.walk(dirname, followlinks=False):
         for file in files:
-            hashlist.append((file, hash_file(os.path.join(root, file))))
+            hashlist.append((file, murmur_hash_file(os.path.join(root, file))))
 
     return hashlist
 
 # Generate MD5 hash for a file
-def hash_file(filename):
+def md5_hash_file(filename):
     hash = hashlib.md5()
     # TODO: consider when file is too large and can't be fit in memory
     with open (filename, 'rb') as f:
@@ -21,17 +22,11 @@ def hash_file(filename):
         hash.update(content)
     return hash.hexdigest()
 
-def murmurhash_file(filename):
+def murmur_hash_file(filename):
     with open(filename, 'rb') as file:
         data = file.read()
     hash = mmh3.hash_bytes(data, 0xBEFFE)
     return hash.hex()
-
-# Print contents of a list
-def print_list(list):
-    for item in list:
-        print (item)
-    print('\n')
 
 def sum_hashes(list):
     sum = 0
@@ -41,14 +36,23 @@ def sum_hashes(list):
 
 # Calculate similarity % between two lists
 def check_similarity(list1, list2):
+
+    #Converting lists to tuples for comparision
+    #c1 = Counter(map(tuple, list1))
+    #c2 = Counter (map(tuple,list2))
+    
     c1 = Counter(list1)
-    c2 = Counter (list2)
+    c2 = Counter(list2)
+
     diff = c1 - c2
+    #TODO: Consider c2 - c1 case also 
+
     common = c1 & c2
     
     c1_length = float(sum(c1.values()))
     c2_length = float(sum(c2.values()))
     diff_length = float(sum(diff.values()))
+    common_length = float(sum(common.values()))
     
     if (opt_nomatch):
         print('Non-matching samples: \n', list(diff))
@@ -56,8 +60,9 @@ def check_similarity(list1, list2):
     if (opt_match):
         print('Matching samples: \n', list(common))
 
-    similarity_score = 100 - ((diff_length / max(c1_length, c2_length))* 100) 
+    similarity_score = ((common_length / max(c1_length, c2_length))* 100) 
     return similarity_score
+
 
 
 # Usage instructions
@@ -103,27 +108,30 @@ if __name__ == '__main__':
         elif i == '-p':
             opt_print = True
 
-    hashlist1 = []
-    hashlist2 = []
+    h1 = Hashlist()
+    h2 = Hashlist()
 
     dir1 = sys.argv[1]
     dir2 = sys.argv[2]
-    
+
     # Hash every file inside a directory and put it in a list 
-    hashlist1 = hash_directory(dir1)
-    hashlist2 = hash_directory(dir2)
+    h1.hashlist = hash_directory(dir1)
+    h2.hashlist = hash_directory(dir2)
+
+    h1.shuffle()
+    h2.shuffle()
+    
+    h1.pop(1000)
+    h2.pop(1000)
 
     # Print list of hashes
     if (opt_print):
-        print_list(hashlist1)
-        print_list(hashlist2)
+        h1.print()
+        h2.print()
 
-    
     #Calculate similarity between two lists 
-    #print("Similarity %: ", check_similarity(hashlist1, hashlist2))
+    print("Similarity %: ", check_similarity(h1.hashlist, h2.hashlist))
 
     print("Execution time: %s seconds" % (time.time() - start_time))
-        
 
-    #print ("Hash sum: ", sum_hashes(hashlist1))
 
