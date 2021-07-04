@@ -12,7 +12,6 @@ class Hashlist:
             print (item)
         print('\n')
     
-    
     # Save list into csv file
     def save(self, filename):
         save_dir = "output/" + filename

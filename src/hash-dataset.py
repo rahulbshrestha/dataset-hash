@@ -118,11 +118,12 @@ if __name__ == '__main__':
     h1.hashlist = hash_directory(dir1)
     h2.hashlist = hash_directory(dir2)
 
-    h1.shuffle()
-    h2.shuffle()
+    #h1.shuffle()
+    #h2.shuffle()
     
-    h1.pop(1000)
-    h2.pop(1000)
+    #h1.pop(1000)
+    #h2.pop(1000)
+    sdfsdf
 
     # Print list of hashes
     if (opt_print):
